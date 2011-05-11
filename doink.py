@@ -1,37 +1,47 @@
-import feedparser
-
 from Tkinter import *
+import feedparser
 
 class App:
   def __init__(self, master):
-    frame = Frame(master, width=300, height=200)
+    master.wm_title("doink: the awesome twitter client")
+    
+    frame = Frame(master, width=360, height=200, bg='white')
     frame.pack()
     frame.pack_propagate(0)
     
     self.v = StringVar()
-    self.getUpdate()
-    
-    self.msg = Message(frame, textvariable=self.v, width=260)
+    self.msg = Message(frame, textvariable=self.v, width=260, bg='white')
     self.msg.pack()
     
     bframe = Frame(frame, width=300, height=40)
     bframe.pack(side=BOTTOM)
     
-    self.button = Button(bframe, text="QUIT", fg="red", command=frame.quit)
+    self.button = Button(bframe, text="Quit", fg="red", command=frame.quit)
     self.button.pack(side=LEFT)
     
-    self.update = Button(bframe, text="Update", command=self.getUpdate)
+    self.update = Button(bframe, text="Update", command=self.refreshMsg)
     self.update.pack(side=LEFT)
     
-  def getUpdate(self):
-    tweets = feedparser.parse('http://twitter.com/statuses/public_timeline.rss')
-    self.v.set('\n' + tweets['entries'][0]['title'].encode("utf-8"))
-
+    self.tweets = []
+    self.getTweets()
+    self.refreshMsg()
+    
+  def getTweets(self):
+    feed = feedparser.parse('http://twitter.com/statuses/public_timeline.rss')
+    for tweet in feed['entries']:
+      self.tweets.append(tweet['title'].encode("utf-8"))
+    print 'getting tweets...'
+  
+  def refreshMsg(self):
+    if not self.tweets:
+      self.getTweets()
+    self.v.set('\n' + self.tweets.pop())
+      
 
 def main():
-  root = Tk()
-  app = App(root)
-  root.mainloop()
+  root = Tk()       # create the root widget
+  app = App(root)   # pass root widget to App
+  root.mainloop()   # app will run while mainloop does
 
 if __name__ == '__main__':
   main()
